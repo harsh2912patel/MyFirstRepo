@@ -33,7 +33,7 @@ function NavContent() {
       <div className="flex h-16 items-center px-4">
         <Link href="/" className="flex items-center gap-2 font-semibold">
           <Logo className="h-6 w-6 text-primary" />
-          <span className="">FinanceFlow</span>
+          <span className="">FinEye</span>
         </Link>
       </div>
       <div className="flex-1">
@@ -63,7 +63,7 @@ export function Sidebar() {
     <header className="flex h-14 items-center gap-4 border-b bg-muted/40 px-6">
       <Link href="/" className="flex items-center gap-2 font-semibold">
         <Logo className="h-6 w-6 text-primary" />
-        <span className="">FinanceFlow</span>
+        <span className="">FinEye</span>
       </Link>
       <Sheet>
         <SheetTrigger asChild>

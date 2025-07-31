@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 import { Toaster } from '@/components/ui/toaster';
 
 export const metadata: Metadata = {
-  title: 'FinanceFlow',
+  title: 'FinEye',
   description: 'Your personal finance manager',
 >>>>>>> 61ae0a6 (Initial prototype)
 };
