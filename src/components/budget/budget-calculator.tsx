@@ -1,0 +1,93 @@
+'use client';
+
+import { useState } from 'react';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { DollarSign } from 'lucide-react';
+
+const FIXED_EXPENSES = [
+  { name: 'Rent/Mortgage', amount: 1200 },
+  { name: 'Utilities', amount: 150 },
+  { name: 'Insurance', amount: 100 },
+  { name: 'Loan Payments', amount: 250 },
+];
+
+const totalFixedExpenses = FIXED_EXPENSES.reduce((sum, exp) => sum + exp.amount, 0);
+
+export function BudgetCalculator() {
+  const [income, setIncome] = useState<number | ''>('');
+  const [freeAmount, setFreeAmount] = useState<number | null>(null);
+
+  const handleCalculate = () => {
+    if (typeof income === 'number') {
+      setFreeAmount(income - totalFixedExpenses);
+    }
+  };
+
+  return (
+    <div className="grid gap-8 md:grid-cols-2">
+      <Card>
+        <CardHeader>
+          <CardTitle>Budget Planner</CardTitle>
+          <CardDescription>Enter your monthly income to see your budget breakdown.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="income">Monthly Income</Label>
+            <div className="relative">
+              <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                id="income"
+                type="number"
+                placeholder="e.g., 3000"
+                value={income}
+                onChange={(e) => setIncome(e.target.value === '' ? '' : parseFloat(e.target.value))}
+                className="pl-8"
+              />
+            </div>
+          </div>
+        </CardContent>
+        <CardFooter>
+          <Button onClick={handleCalculate} disabled={!income}>Calculate Budget</Button>
+        </CardFooter>
+      </Card>
+
+      <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Fixed Expenses</CardTitle>
+            <CardDescription>These are your recurring monthly costs.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-2">
+              {FIXED_EXPENSES.map((expense) => (
+                <li key={expense.name} className="flex justify-between">
+                  <span>{expense.name}</span>
+                  <span className="font-medium">${expense.amount.toFixed(2)}</span>
+                </li>
+              ))}
+            </ul>
+            <div className="border-t mt-4 pt-4 flex justify-between font-bold">
+              <span>Total Fixed Expenses</span>
+              <span>${totalFixedExpenses.toFixed(2)}</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        {freeAmount !== null && (
+          <Card className="bg-primary/10 border-primary">
+            <CardHeader>
+              <CardTitle>Available for Spending</CardTitle>
+              <CardDescription>This is the amount left after fixed expenses.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-4xl font-bold text-primary">${freeAmount.toFixed(2)}</p>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+    </div>
+  );
+}
