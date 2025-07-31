@@ -1,8 +1,9 @@
+
 'use client';
 
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { useCurrency } from '@/context/currency-context';
@@ -41,14 +42,14 @@ export function BudgetCalculator() {
           <div className="space-y-2">
             <Label htmlFor="income">Monthly Income ({currency.code})</Label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground">{currency.symbol}</span>
-              <Input
+              <span className="absolute left-3 top-3 h-4 w-4 text-muted-foreground">{currency.symbol}</span>
+              <Textarea
                 id="income"
-                type="number"
                 placeholder="e.g., 3000"
                 value={income}
                 onChange={(e) => setIncome(e.target.value === '' ? '' : parseFloat(e.target.value))}
                 className="pl-8"
+                rows={1}
               />
             </div>
           </div>
