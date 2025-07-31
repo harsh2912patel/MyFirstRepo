@@ -19,12 +19,15 @@ import {
 import type { Transaction } from '@/lib/types';
 import { cn, formatCurrency } from '@/lib/utils';
 import { useCurrency } from '@/context/currency-context';
+import { Button } from '@/components/ui/button';
+import { Trash2 } from 'lucide-react';
 
 interface RecentTransactionsProps {
   transactions: Transaction[];
+  onRemoveTransaction: (id: string) => void;
 }
 
-export function RecentTransactions({ transactions }: RecentTransactionsProps) {
+export function RecentTransactions({ transactions, onRemoveTransaction }: RecentTransactionsProps) {
   const { currency, exchangeRates } = useCurrency();
   const convert = (amount: number) => amount * exchangeRates[currency.code];
 
@@ -40,8 +43,8 @@ export function RecentTransactions({ transactions }: RecentTransactionsProps) {
             <TableRow>
               <TableHead>Name</TableHead>
               <TableHead>Category</TableHead>
-              <TableHead>Date</TableHead>
               <TableHead className="text-right">Amount</TableHead>
+              <TableHead className="w-[50px]"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -51,7 +54,6 @@ export function RecentTransactions({ transactions }: RecentTransactionsProps) {
                 <TableCell>
                   <Badge variant="outline">{transaction.category}</Badge>
                 </TableCell>
-                <TableCell>{transaction.date}</TableCell>
                 <TableCell
                   className={cn(
                     'text-right font-medium',
@@ -60,6 +62,11 @@ export function RecentTransactions({ transactions }: RecentTransactionsProps) {
                 >
                   {transaction.type === 'credit' ? '+' : '-'}
                   {formatCurrency(convert(transaction.amount), currency.code)}
+                </TableCell>
+                <TableCell>
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onRemoveTransaction(transaction.id)}>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
                 </TableCell>
               </TableRow>
             ))}
