@@ -8,27 +8,57 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { useCurrency } from '@/context/currency-context';
 import { formatCurrency } from '@/lib/utils';
+import { Input } from '@/components/ui/input';
+import { X } from 'lucide-react';
 
-const FIXED_EXPENSES = [
-  { name: 'Rent/Mortgage', amount: 1200 },
-  { name: 'Utilities', amount: 150 },
-  { name: 'Insurance', amount: 100 },
-  { name: 'Loan Payments', amount: 250 },
+interface FixedExpense {
+  id: string;
+  name: string;
+  amount: number;
+}
+
+const initialFixedExpenses: FixedExpense[] = [
+  { id: '1', name: 'Rent/Mortgage', amount: 1200 },
+  { id: '2', name: 'Utilities', amount: 150 },
+  { id: '3', name: 'Insurance', amount: 100 },
+  { id: '4', name: 'Loan Payments', amount: 250 },
 ];
-
-const totalFixedExpenses = FIXED_EXPENSES.reduce((sum, exp) => sum + exp.amount, 0);
 
 export function BudgetCalculator() {
   const [income, setIncome] = useState<number | ''>('');
   const [freeAmount, setFreeAmount] = useState<number | null>(null);
   const { currency, exchangeRates } = useCurrency();
+
+  const [expenses, setExpenses] = useState<FixedExpense[]>(initialFixedExpenses);
+  const [newExpenseName, setNewExpenseName] = useState('');
+  const [newExpenseAmount, setNewExpenseAmount] = useState<number | ''>('');
+
   const convert = (amount: number) => amount * exchangeRates[currency.code];
+  const totalFixedExpenses = expenses.reduce((sum, exp) => sum + exp.amount, 0);
 
   const handleCalculate = () => {
     if (typeof income === 'number') {
       const localIncome = income / exchangeRates[currency.code];
       setFreeAmount(localIncome - totalFixedExpenses);
     }
+  };
+
+  const handleAddExpense = () => {
+    if (newExpenseName && typeof newExpenseAmount === 'number' && newExpenseAmount > 0) {
+      const localAmount = newExpenseAmount / exchangeRates[currency.code];
+      const newExpense: FixedExpense = {
+        id: new Date().getTime().toString(),
+        name: newExpenseName,
+        amount: localAmount,
+      };
+      setExpenses([...expenses, newExpense]);
+      setNewExpenseName('');
+      setNewExpenseAmount('');
+    }
+  };
+
+  const handleRemoveExpense = (id: string) => {
+    setExpenses(expenses.filter((exp) => exp.id !== id));
   };
 
   return (
@@ -63,14 +93,19 @@ export function BudgetCalculator() {
         <Card>
           <CardHeader>
             <CardTitle>Fixed Expenses</CardTitle>
-            <CardDescription>These are your recurring monthly costs.</CardDescription>
+            <CardDescription>Your recurring monthly costs.</CardDescription>
           </CardHeader>
           <CardContent>
             <ul className="space-y-2">
-              {FIXED_EXPENSES.map((expense) => (
-                <li key={expense.name} className="flex justify-between">
+              {expenses.map((expense) => (
+                <li key={expense.id} className="flex justify-between items-center">
                   <span>{expense.name}</span>
-                  <span className="font-medium">{formatCurrency(convert(expense.amount), currency.code)}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">{formatCurrency(convert(expense.amount), currency.code)}</span>
+                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleRemoveExpense(expense.id)}>
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </li>
               ))}
             </ul>
@@ -79,6 +114,28 @@ export function BudgetCalculator() {
               <span>{formatCurrency(convert(totalFixedExpenses), currency.code)}</span>
             </div>
           </CardContent>
+          <CardFooter className="flex-col items-start gap-2">
+            <Label>Add New Expense</Label>
+            <div className="flex gap-2 w-full">
+              <Input
+                placeholder="Expense Name"
+                value={newExpenseName}
+                onChange={(e) => setNewExpenseName(e.target.value)}
+              />
+              <div className="relative">
+                 <span className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground">{currency.symbol}</span>
+                 <Input
+                    type="number"
+                    placeholder="Amount"
+                    value={newExpenseAmount}
+                    onChange={(e) => setNewExpenseAmount(e.target.value === '' ? '' : parseFloat(e.target.value))}
+                    className="pl-8 w-32"
+                 />
+              </div>
+
+            </div>
+            <Button onClick={handleAddExpense} variant="secondary" size="sm">Add Expense</Button>
+          </CardFooter>
         </Card>
 
         {freeAmount !== null && (
