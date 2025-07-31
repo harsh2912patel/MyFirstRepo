@@ -15,7 +15,6 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Logo } from '@/components/icons';
-import { useMediaQuery } from '@/hooks/use-media-query';
 import { CurrencySwitcher } from './currency-switcher';
 
 const navItems = [
@@ -59,27 +58,15 @@ function NavContent() {
 }
 
 export function Sidebar() {
-  const isDesktop = useMediaQuery('(min-width: 768px)');
-
-  if (isDesktop) {
-    return (
-      <aside className="hidden border-r bg-muted/40 md:block">
-        <div className="flex h-full max-h-screen flex-col gap-2">
-          <NavContent />
-        </div>
-      </aside>
-    );
-  }
-
   return (
     <header className="flex h-14 items-center gap-4 border-b bg-muted/40 px-6">
-      <Link href="/" className="flex items-center gap-2 font-semibold md:hidden">
+      <Link href="/" className="flex items-center gap-2 font-semibold">
         <Logo className="h-6 w-6 text-primary" />
         <span className="">FinanceFlow</span>
       </Link>
       <Sheet>
         <SheetTrigger asChild>
-          <Button variant="outline" size="icon" className="shrink-0 md:hidden ml-auto">
+          <Button variant="outline" size="icon" className="shrink-0 ml-auto">
             <Menu className="h-5 w-5" />
             <span className="sr-only">Toggle navigation menu</span>
           </Button>

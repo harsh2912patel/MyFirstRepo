@@ -8,9 +8,9 @@ export default function AppLayout({
 }) {
   return (
     <CurrencyProvider>
-      <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
+      <div className="flex flex-col min-h-screen w-full">
         <Sidebar />
-        <main className="flex flex-col bg-background">{children}</main>
+        <main className="flex-1 flex flex-col bg-background">{children}</main>
       </div>
     </CurrencyProvider>
   );
