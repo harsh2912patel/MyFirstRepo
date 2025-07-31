@@ -10,15 +10,15 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import { generate } from 'genkit/generate';
+import { generate } from 'genkit';
 
 const FinancialAdviceInputSchema = z.object({
-  query: z.string().describe('The user\u2019s question about savings or investments.'),
+  query: z.string().describe('The user’s question about savings or investments.'),
 });
 export type FinancialAdviceInput = z.infer<typeof FinancialAdviceInputSchema>;
 
 const FinancialAdviceOutputSchema = z.object({
-  advice: z.string().describe('General financial advice related to the user\u2019s question.'),
+  advice: z.string().describe('General financial advice related to the user’s question.'),
 });
 export type FinancialAdviceOutput = z.infer<typeof FinancialAdviceOutputSchema>;
 
