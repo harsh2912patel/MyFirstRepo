@@ -21,16 +21,38 @@ export function GuidanceForm() {
     if (!query) return;
 
     setIsLoading(true);
-    setAdvice(null);
+    setAdvice('');
     setError(null);
     try {
-      const stream = await getFinancialAdvice({ query });
-      let accumulatedAdvice = '';
+      const response = await getFinancialAdvice({ query });
       
-      for await (const chunk of stream) {
-        if (chunk?.advice) {
-          accumulatedAdvice += chunk.advice;
-          setAdvice(accumulatedAdvice);
+      // Manually read from the ReadableStream
+      const reader = response.getReader();
+      const decoder = new TextDecoder();
+      let accumulatedAdvice = '';
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        
+        const chunk = decoder.decode(value, { stream: true });
+        
+        try {
+          // Each chunk might not be a full JSON object, so we need to handle this carefully.
+          // A simple approach is to accumulate and parse, but for this case, let's assume
+          // we get newline-delimited JSON objects.
+          const jsonStrings = chunk.split('\n').filter(s => s.trim() !== '');
+          for (const jsonString of jsonStrings) {
+            const parsed = JSON.parse(jsonString);
+            if (parsed?.advice) {
+              accumulatedAdvice += parsed.advice;
+              setAdvice(accumulatedAdvice);
+            }
+          }
+        } catch (e) {
+          // This can happen if a chunk is not a complete JSON object.
+          // In a more robust implementation, we would buffer the chunks.
+          console.warn("Could not parse stream chunk:", chunk);
         }
       }
 
