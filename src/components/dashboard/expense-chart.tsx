@@ -4,12 +4,17 @@ import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from 'recharts';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { Transaction } from '@/lib/types';
+import { useCurrency } from '@/context/currency-context';
+import { formatCurrency } from '@/lib/utils';
 
 interface ExpenseChartProps {
   data: Transaction[];
 }
 
 export function ExpenseChart({ data }: ExpenseChartProps) {
+  const { currency, exchangeRates } = useCurrency();
+  const convert = (amount: number) => amount * exchangeRates[currency.code];
+  
   const chartData = data
     .filter((t) => t.type === 'debit')
     .reduce((acc, transaction) => {
@@ -21,7 +26,8 @@ export function ExpenseChart({ data }: ExpenseChartProps) {
         acc.push({ name: month, total: transaction.amount });
       }
       return acc;
-    }, [] as { name: string; total: number }[]);
+    }, [] as { name: string; total: number }[])
+    .map(item => ({ ...item, total: convert(item.total)}));
 
   return (
     <Card>
@@ -43,7 +49,7 @@ export function ExpenseChart({ data }: ExpenseChartProps) {
               fontSize={12}
               tickLine={false}
               axisLine={false}
-              tickFormatter={(value) => `$${value}`}
+              tickFormatter={(value) => formatCurrency(value as number, currency.code, { notation: 'compact' })}
             />
             <Bar dataKey="total" fill="var(--color-primary)" radius={[4, 4, 0, 0]} />
           </BarChart>

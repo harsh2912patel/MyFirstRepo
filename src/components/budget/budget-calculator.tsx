@@ -5,7 +5,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { DollarSign } from 'lucide-react';
+import { useCurrency } from '@/context/currency-context';
+import { formatCurrency } from '@/lib/utils';
 
 const FIXED_EXPENSES = [
   { name: 'Rent/Mortgage', amount: 1200 },
@@ -19,10 +20,13 @@ const totalFixedExpenses = FIXED_EXPENSES.reduce((sum, exp) => sum + exp.amount,
 export function BudgetCalculator() {
   const [income, setIncome] = useState<number | ''>('');
   const [freeAmount, setFreeAmount] = useState<number | null>(null);
+  const { currency, exchangeRates } = useCurrency();
+  const convert = (amount: number) => amount * exchangeRates[currency.code];
 
   const handleCalculate = () => {
     if (typeof income === 'number') {
-      setFreeAmount(income - totalFixedExpenses);
+      const localIncome = income / exchangeRates[currency.code];
+      setFreeAmount(localIncome - totalFixedExpenses);
     }
   };
 
@@ -35,9 +39,9 @@ export function BudgetCalculator() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="income">Monthly Income</Label>
+            <Label htmlFor="income">Monthly Income ({currency.code})</Label>
             <div className="relative">
-              <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground">{currency.symbol}</span>
               <Input
                 id="income"
                 type="number"
@@ -65,13 +69,13 @@ export function BudgetCalculator() {
               {FIXED_EXPENSES.map((expense) => (
                 <li key={expense.name} className="flex justify-between">
                   <span>{expense.name}</span>
-                  <span className="font-medium">${expense.amount.toFixed(2)}</span>
+                  <span className="font-medium">{formatCurrency(convert(expense.amount), currency.code)}</span>
                 </li>
               ))}
             </ul>
             <div className="border-t mt-4 pt-4 flex justify-between font-bold">
               <span>Total Fixed Expenses</span>
-              <span>${totalFixedExpenses.toFixed(2)}</span>
+              <span>{formatCurrency(convert(totalFixedExpenses), currency.code)}</span>
             </div>
           </CardContent>
         </Card>
@@ -83,7 +87,7 @@ export function BudgetCalculator() {
               <CardDescription>This is the amount left after fixed expenses.</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-4xl font-bold text-primary">${freeAmount.toFixed(2)}</p>
+              <p className="text-4xl font-bold text-primary">{formatCurrency(convert(freeAmount), currency.code)}</p>
             </CardContent>
           </Card>
         )}

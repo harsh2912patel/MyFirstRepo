@@ -3,7 +3,6 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-  BarChart,
   Bot,
   CandlestickChart,
   Landmark,
@@ -17,6 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Logo } from '@/components/icons';
 import { useMediaQuery } from '@/hooks/use-media-query';
+import { CurrencySwitcher } from './currency-switcher';
 
 const navItems = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -53,6 +53,7 @@ function NavContent() {
           ))}
         </nav>
       </div>
+      <CurrencySwitcher />
     </>
   );
 }

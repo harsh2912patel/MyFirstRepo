@@ -1,8 +1,12 @@
+'use client';
+
 import { DollarSign, CreditCard, Landmark, Users } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ExpenseChart } from '@/components/dashboard/expense-chart';
 import { RecentTransactions } from '@/components/dashboard/recent-transactions';
 import type { Transaction } from '@/lib/types';
+import { useCurrency } from '@/context/currency-context';
+import { formatCurrency } from '@/lib/utils';
 
 const mockTransactions: Transaction[] = [
   { id: '1', date: '2024-07-26', name: 'Coffee Shop', category: 'Food', type: 'debit', amount: 5.5 },
@@ -21,6 +25,9 @@ const totalLoans = 15000;
 
 
 export default function DashboardPage() {
+  const { currency, exchangeRates } = useCurrency();
+  const convert = (amount: number) => amount * exchangeRates[currency.code];
+
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       <div className="flex items-center justify-between space-y-2">
@@ -33,7 +40,7 @@ export default function DashboardPage() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${totalIncome.toFixed(2)}</div>
+            <div className="text-2xl font-bold">{formatCurrency(convert(totalIncome), currency.code)}</div>
             <p className="text-xs text-muted-foreground">+20.1% from last month</p>
           </CardContent>
         </Card>
@@ -43,7 +50,7 @@ export default function DashboardPage() {
             <CreditCard className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${totalExpenses.toFixed(2)}</div>
+            <div className="text-2xl font-bold">{formatCurrency(convert(totalExpenses), currency.code)}</div>
             <p className="text-xs text-muted-foreground">+180.1% from last month</p>
           </CardContent>
         </Card>
@@ -53,7 +60,7 @@ export default function DashboardPage() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${netBalance.toFixed(2)}</div>
+            <div className="text-2xl font-bold">{formatCurrency(convert(netBalance), currency.code)}</div>
             <p className="text-xs text-muted-foreground">+19% from last month</p>
           </CardContent>
         </Card>
@@ -63,7 +70,7 @@ export default function DashboardPage() {
             <Landmark className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${totalLoans.toFixed(2)}</div>
+            <div className="text-2xl font-bold">{formatCurrency(convert(totalLoans), currency.code)}</div>
             <p className="text-xs text-muted-foreground">+2 since last hour</p>
           </CardContent>
         </Card>

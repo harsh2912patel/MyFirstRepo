@@ -1,3 +1,5 @@
+'use client';
+
 import { Badge } from '@/components/ui/badge';
 import {
   Card,
@@ -15,13 +17,17 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import type { Transaction } from '@/lib/types';
-import { cn } from '@/lib/utils';
+import { cn, formatCurrency } from '@/lib/utils';
+import { useCurrency } from '@/context/currency-context';
 
 interface RecentTransactionsProps {
   transactions: Transaction[];
 }
 
 export function RecentTransactions({ transactions }: RecentTransactionsProps) {
+  const { currency, exchangeRates } = useCurrency();
+  const convert = (amount: number) => amount * exchangeRates[currency.code];
+
   return (
     <Card>
       <CardHeader>
@@ -52,8 +58,8 @@ export function RecentTransactions({ transactions }: RecentTransactionsProps) {
                     transaction.type === 'credit' ? 'text-green-600' : 'text-red-600'
                   )}
                 >
-                  {transaction.type === 'credit' ? '+' : '-'}$
-                  {transaction.amount.toFixed(2)}
+                  {transaction.type === 'credit' ? '+' : '-'}
+                  {formatCurrency(convert(transaction.amount), currency.code)}
                 </TableCell>
               </TableRow>
             ))}

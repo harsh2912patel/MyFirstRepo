@@ -11,8 +11,9 @@ import {
 } from '@/components/ui/table';
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import type { Investment } from '@/lib/types';
-import { cn } from '@/lib/utils';
+import { cn, formatCurrency } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
+import { useCurrency } from '@/context/currency-context';
 
 const mockInvestments: Investment[] = [
   { id: '1', name: 'Apple Inc.', ticker: 'AAPL', type: 'Stock', quantity: 10, purchasePrice: 150, currentPrice: 214.29 },
@@ -31,11 +32,16 @@ const portfolioHistory = [
   { month: 'Jul', value: 7214 },
 ];
 
-const totalValue = mockInvestments.reduce((sum, inv) => sum + inv.quantity * inv.currentPrice, 0);
-const totalCost = mockInvestments.reduce((sum, inv) => sum + inv.quantity * inv.purchasePrice, 0);
-const totalGain = totalValue - totalCost;
-
 export function PortfolioView() {
+  const { currency, exchangeRates } = useCurrency();
+  const convert = (amount: number) => amount * exchangeRates[currency.code];
+  
+  const totalValue = mockInvestments.reduce((sum, inv) => sum + inv.quantity * inv.currentPrice, 0);
+  const totalCost = mockInvestments.reduce((sum, inv) => sum + inv.quantity * inv.purchasePrice, 0);
+  const totalGain = totalValue - totalCost;
+  
+  const convertedHistory = portfolioHistory.map(item => ({...item, value: convert(item.value)}));
+
   return (
     <div className="grid gap-8">
       <Card>
@@ -44,7 +50,7 @@ export function PortfolioView() {
         </CardHeader>
         <CardContent className="h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={portfolioHistory} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+            <AreaChart data={convertedHistory} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
               <defs>
                 <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="var(--color-primary)" stopOpacity={0.8}/>
@@ -52,12 +58,18 @@ export function PortfolioView() {
                 </linearGradient>
               </defs>
               <XAxis dataKey="month" stroke="#888888" fontSize={12} />
-              <YAxis stroke="#888888" fontSize={12} domain={['dataMin - 200', 'dataMax + 200']} tickFormatter={(value) => `$${value}`} />
+              <YAxis 
+                stroke="#888888" 
+                fontSize={12} 
+                domain={['dataMin - 200', 'dataMax + 200']} 
+                tickFormatter={(value) => formatCurrency(value as number, currency.code, { notation: 'compact' })}
+              />
               <Tooltip
                 contentStyle={{
                   backgroundColor: 'hsl(var(--background))',
                   borderColor: 'hsl(var(--border))',
                 }}
+                formatter={(value: number) => formatCurrency(value, currency.code)}
               />
               <Area type="monotone" dataKey="value" stroke="var(--color-primary)" fillOpacity={1} fill="url(#colorValue)" />
             </AreaChart>
@@ -92,9 +104,9 @@ export function PortfolioView() {
                     </TableCell>
                     <TableCell><Badge variant="secondary">{investment.type}</Badge></TableCell>
                     <TableCell className="text-right">{investment.quantity}</TableCell>
-                    <TableCell className="text-right">${currentValue.toFixed(2)}</TableCell>
+                    <TableCell className="text-right">{formatCurrency(convert(currentValue), currency.code)}</TableCell>
                     <TableCell className={cn('text-right font-medium', gainLoss >= 0 ? 'text-green-600' : 'text-red-600')}>
-                      {gainLoss >= 0 ? '+' : ''}${gainLoss.toFixed(2)}
+                      {gainLoss >= 0 ? '+' : ''}{formatCurrency(convert(gainLoss), currency.code)}
                     </TableCell>
                   </TableRow>
                 );
@@ -104,10 +116,10 @@ export function PortfolioView() {
         </CardContent>
         <CardFooter className="font-bold text-lg flex justify-end gap-8">
             <div>
-                Total Value: <span className="text-primary">${totalValue.toFixed(2)}</span>
+                Total Value: <span className="text-primary">{formatCurrency(convert(totalValue), currency.code)}</span>
             </div>
             <div>
-                Total Gain: <span className={cn(totalGain >= 0 ? 'text-green-600' : 'text-red-600')}>${totalGain.toFixed(2)}</span>
+                Total Gain: <span className={cn(totalGain >= 0 ? 'text-green-600' : 'text-red-600')}>{formatCurrency(convert(totalGain), currency.code)}</span>
             </div>
         </CardFooter>
       </Card>
