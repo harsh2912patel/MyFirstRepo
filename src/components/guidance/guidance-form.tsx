@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useStreamableValue } from 'ai/rsc';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
@@ -13,6 +12,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 export function GuidanceForm() {
   const [query, setQuery] = useState('');
   const [advice, setAdvice] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
@@ -22,33 +22,26 @@ export function GuidanceForm() {
 
     setIsLoading(true);
     setAdvice(null);
+    setError(null);
     try {
-      const { output } = await getFinancialAdvice({ query });
+      const stream = await getFinancialAdvice({ query });
+      let accumulatedAdvice = '';
       
-      let finalAdvice = '';
-      if (typeof output === 'object' && output !== null && 'advice' in output) {
-        finalAdvice = (output as { advice: string }).advice;
-      } else if (typeof output === 'string') {
-        finalAdvice = output;
-      } else {
-        // Attempt to find the advice in a streaming response
-        const streamedOutput = await (async () => {
-          let value = '';
-          for await (const delta of output) {
-            value += delta.advice;
-          }
-          return value;
-        })();
-        finalAdvice = streamedOutput || "Sorry, I couldn't generate advice for that question.";
+      for await (const chunk of stream) {
+        if (chunk?.advice) {
+          accumulatedAdvice += chunk.advice;
+          setAdvice(accumulatedAdvice);
+        }
       }
-      setAdvice(finalAdvice);
 
-    } catch (error) {
-      console.error(error);
+    } catch (err: any) {
+      console.error(err);
+      const errorMessage = err.message || 'Failed to get financial advice. Please try again.';
+      setError(errorMessage);
       toast({
         variant: 'destructive',
         title: 'An error occurred',
-        description: 'Failed to get financial advice. Please try again.',
+        description: errorMessage,
       });
     } finally {
       setIsLoading(false);
@@ -80,9 +73,20 @@ export function GuidanceForm() {
         </CardFooter>
       </form>
 
-      {isLoading && (
+      {isLoading && !advice && (
         <CardContent className="flex items-center justify-center p-8">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </CardContent>
+      )}
+
+      {error && (
+        <CardContent>
+          <Alert variant="destructive">
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription className="prose prose-sm dark:prose-invert max-w-none pt-2">
+                {error}
+            </AlertDescription>
+          </Alert>
         </CardContent>
       )}
 
